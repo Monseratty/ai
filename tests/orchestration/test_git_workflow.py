@@ -36,6 +36,9 @@ async def _assert_orchestrator_commits_after_workflow_success_without_opening_pr
     workflow = await service.create_workflow("Commit successful workflow")
     coding_task, testing_task = await tasks.list_by_workflow(workflow.id)
 
+    assert workflow.branch_name == f"codex/commit-successful-workflow-{str(workflow.id)[:8]}"
+    assert git.branches == [(workflow.branch_name, "main")]
+
     await service.execute_task(coding_task.id)
     await service.execute_task(testing_task.id)
 

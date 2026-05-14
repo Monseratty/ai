@@ -5,6 +5,7 @@ from pathlib import Path
 from time import perf_counter
 
 from ai_orchestrator.application.agents.schemas import AgentInput, CoderOutput, TesterOutput
+from ai_orchestrator.application.git.branching import BranchNamingPolicy
 from ai_orchestrator.application.tools.execution import ToolExecutionService, ToolRequest
 from ai_orchestrator.domain.enums import ReviewDecision, TaskKind, TaskStatus, WorkflowStatus
 from ai_orchestrator.domain.models.artifact import Artifact
@@ -43,6 +44,7 @@ class OrchestratorService:
         workspace_manager: SandboxWorkspaceManager | None = None,
         repo_path: Path | None = None,
         tool_executor: ToolExecutionService | None = None,
+        branch_naming: BranchNamingPolicy | None = None,
         max_feedback_attempts: int = 2,
     ) -> None:
         self._workflows = workflows
@@ -57,10 +59,18 @@ class OrchestratorService:
         self._workspace_manager = workspace_manager
         self._repo_path = repo_path
         self._tool_executor = tool_executor
+        self._branch_naming = branch_naming or BranchNamingPolicy()
         self._max_feedback_attempts = max_feedback_attempts
 
     async def create_workflow(self, user_task: str) -> Workflow:
         workflow = Workflow(user_task=user_task)
+        if self._git is not None:
+            branch_name = self._branch_naming.for_workflow(
+                workflow_id=workflow.id,
+                user_task=user_task,
+            )
+            await self._git.create_branch(branch_name, base_ref=workflow.base_ref)
+            workflow = workflow.model_copy(update={"branch_name": branch_name})
         await self._workflows.add(workflow)
         await self._telemetry.event("workflow.created", {"workflow_id": str(workflow.id)})
         await self._telemetry.increment("workflows.created")

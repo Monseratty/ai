@@ -22,6 +22,7 @@ class PullRequestService:
     ) -> PullRequestResult:
         if not await self._approvals.is_approved(approval_gate_id):
             raise PermissionError("Pull request creation requires an approved approval gate.")
+        await self._git.push(branch_name, remote="origin")
         return await self._git.open_pull_request(
             title=title,
             body=body,

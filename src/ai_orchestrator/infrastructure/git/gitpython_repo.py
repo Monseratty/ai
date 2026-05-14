@@ -30,6 +30,12 @@ class GitPythonService(GitService):
         commit = repo.index.commit(message)
         return CommitResult(sha=commit.hexsha, message=message)
 
+    async def push(self, branch_name: str, remote: str = "origin") -> None:
+        from git import Repo
+
+        repo = Repo(self._repo_path)
+        repo.git.push("-u", remote, branch_name)
+
     async def rollback(self) -> None:
         from git import Repo
 
@@ -44,4 +50,3 @@ class GitPythonService(GitService):
             number=None,
             is_draft=True,
         )
-

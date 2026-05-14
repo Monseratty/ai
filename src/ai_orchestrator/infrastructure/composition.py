@@ -9,6 +9,7 @@ from ai_orchestrator.application.git.pull_requests import PullRequestService
 from ai_orchestrator.application.sandbox.validation import SandboxValidationService
 from ai_orchestrator.application.tools.execution import ToolExecutionService
 from ai_orchestrator.application.agents.config import AgentModelConfig
+from ai_orchestrator.application.git.branching import BranchNamingPolicy
 from ai_orchestrator.config.settings import Settings
 from ai_orchestrator.infrastructure.artifacts.filesystem import FilesystemArtifactStore
 from ai_orchestrator.infrastructure.db.session import create_session_factory
@@ -104,6 +105,7 @@ class CompositionRoot:
             workspace_manager=self.workspace_manager,
             repo_path=self.settings.repo_path,
             tool_executor=self.tool_executor,
+            branch_naming=BranchNamingPolicy(prefix=self.settings.branch_prefix),
         )
 
     def approval_service_for_unit_of_work(

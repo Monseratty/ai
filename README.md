@@ -19,7 +19,9 @@ Codex is treated as a coding worker behind the orchestration layer. The orchestr
 - Idempotent worker task claiming with retry attempt tracking.
 - GitPython integration boundary for branch, diff, commit, rollback, and PR creation.
 - Commit-on-success workflow hook with rollback on commit failure.
+- Workflow branch naming policy with configurable prefix.
 - Approval-gated pull request service.
+- Push orchestration before pull request creation.
 - GitHub pull request provider.
 - Logging and OpenTelemetry telemetry backends.
 - FastAPI API surface.

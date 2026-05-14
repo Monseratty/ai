@@ -27,6 +27,7 @@ class Settings(BaseSettings):
     agent_backend: str = "fake"
     artifact_root: Path = Path(".artifacts")
     repo_path: Path = Path(".")
+    branch_prefix: str = "codex/"
     pull_request_provider: str = "local"
     github_repository: str | None = None
     github_token: str | None = None

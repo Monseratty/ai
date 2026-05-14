@@ -149,6 +149,7 @@ class FakeGitService:
     def __init__(self) -> None:
         self.branches: list[tuple[str, str]] = []
         self.commits: list[tuple[str, list[str]]] = []
+        self.pushes: list[tuple[str, str]] = []
         self.pull_requests: list[tuple[str, str, str, str]] = []
         self.rollback_count = 0
         self.fail_commit = False
@@ -164,6 +165,9 @@ class FakeGitService:
             raise RuntimeError("commit failed")
         self.commits.append((message, paths))
         return CommitResult(sha="0" * 40, message=message)
+
+    async def push(self, branch_name: str, remote: str = "origin") -> None:
+        self.pushes.append((branch_name, remote))
 
     async def rollback(self) -> None:
         self.rollback_count += 1

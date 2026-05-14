@@ -127,6 +127,8 @@ Memory layer включает:
 - Approval-gated pull request service.
 - GitHub REST PR provider.
 - Composite git service: local git operations + configurable PR provider.
+- Branch naming policy: `codex/<sanitized-task>-<workflow-id-prefix>`.
+- Push orchestration before pull request creation.
 
 ### API
 
@@ -255,6 +257,7 @@ AIO_REVIEWER_MODEL=...
 
 AIO_PULL_REQUEST_PROVIDER=local
 AIO_PULL_REQUEST_PROVIDER=github
+AIO_BRANCH_PREFIX=codex/
 AIO_GITHUB_REPOSITORY=owner/name
 AIO_GITHUB_TOKEN=...
 
@@ -286,8 +289,6 @@ AIO_TELEMETRY_BACKEND=opentelemetry
 
 ### GitHub / PR operations
 
-- Добавить push orchestration перед GitHub PR creation.
-- Добавить branch naming policy на workflow.
 - Добавить PR status synchronization.
 - Добавить GitHub check-run/status reporting.
 
@@ -311,6 +312,6 @@ Backend сейчас готовится как API-first платформа. UI 
 
 ## Оценка готовности
 
-Текущая оценка: примерно 89%.
+Текущая оценка: примерно 91%.
 
-Оставшиеся 11% - это в основном live integration, production hardening, расширение GitHub flow и UI.
+Оставшиеся 9% - это в основном live integration, production hardening, PR status/check reporting и UI.

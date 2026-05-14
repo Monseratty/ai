@@ -57,12 +57,13 @@ The Redis limiter hashes client keys before storage so bearer tokens or raw iden
 Set these variables to use the GitHub PR provider:
 
 ```bash
+AIO_BRANCH_PREFIX=codex/
 AIO_PULL_REQUEST_PROVIDER=github
 AIO_GITHUB_REPOSITORY=owner/name
 AIO_GITHUB_TOKEN=...
 ```
 
-Pull request creation remains approval-gated by `PullRequestService`.
+Workflow branches are generated from the configured prefix, a sanitized user-task slug, and the workflow id prefix. Pull request creation remains approval-gated by `PullRequestService`, and the branch is pushed before the GitHub PR provider is called.
 
 ## Migration Path
 

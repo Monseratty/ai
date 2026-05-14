@@ -46,4 +46,5 @@ async def _assert_pull_request_service_requires_approved_gate_before_opening_pr(
     )
 
     assert result.url == "local://pull-request/codex/work"
+    assert git.pushes == [("codex/work", "origin")]
     assert git.pull_requests == [("Complete workflow", "Summary", "codex/work", "main")]

@@ -26,6 +26,7 @@ async def _assert_composite_git_service_delegates_prs_to_provider_and_commits_to
     service = CompositeGitService(local=local, pull_requests=provider)
 
     await service.commit("message", ["file.py"])
+    await service.push("codex/work", remote="origin")
     result = await service.open_pull_request(
         title="PR",
         body="Body",
@@ -34,5 +35,6 @@ async def _assert_composite_git_service_delegates_prs_to_provider_and_commits_to
     )
 
     assert local.commits == [("message", ["file.py"])]
+    assert local.pushes == [("codex/work", "origin")]
     assert result.url == "https://example.test/pr/1"
     assert provider.calls == [("PR", "Body", "codex/work", "main")]

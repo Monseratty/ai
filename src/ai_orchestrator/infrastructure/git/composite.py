@@ -30,6 +30,9 @@ class CompositeGitService(GitService):
     async def commit(self, message: str, paths: list[str]) -> CommitResult:
         return await self._local.commit(message, paths)
 
+    async def push(self, branch_name: str, remote: str = "origin") -> None:
+        await self._local.push(branch_name, remote)
+
     async def rollback(self) -> None:
         await self._local.rollback()
 
