@@ -300,17 +300,20 @@ AIO_TELEMETRY_BACKEND=opentelemetry
 
 ### UI
 
-Backend сейчас готовится как API-first платформа. UI лучше делать следующим этапом после runtime validation:
+Добавлен первый static operator console в `frontend/`:
 
 - workflow dashboard;
 - task graph;
-- agent run details;
-- artifacts/logs/diffs;
+- execution history;
 - approval controls;
-- PR status.
+- PR status;
+- GitHub check-run reporting;
+- API base/token configuration;
+- backend CORS defaults for local console origin;
+- seeded demo state when backend is offline.
 
 ## Оценка готовности
 
-Текущая оценка: примерно 94%.
+Текущая оценка: примерно 95%.
 
-Оставшиеся 6% - это в основном live integration, production hardening, advanced agent tooling и UI.
+Оставшиеся 5% - это в основном live integration, production hardening, advanced agent tooling и полноценная frontend сборка/визуальная QA.

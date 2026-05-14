@@ -34,6 +34,9 @@ class Settings(BaseSettings):
     api_token: str | None = None
     api_rate_limit_backend: str = "memory"
     api_rate_limit_per_minute: int = Field(default=60, ge=1)
+    api_cors_origins: list[str] = Field(
+        default_factory=lambda: ["http://127.0.0.1:4173", "http://localhost:4173"]
+    )
     telemetry_backend: str = "logging"
 
 

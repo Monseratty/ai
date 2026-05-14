@@ -35,15 +35,6 @@ class CheckRunResponse(BaseModel):
     url: str
 
 
-@router.get("/{number}", response_model=PullRequestStatusResponse)
-async def get_pull_request_status(
-    number: int,
-    pull_requests: PullRequestService = Depends(get_pull_request_service),
-) -> PullRequestStatusResponse:
-    status = await pull_requests.get_pull_request_status(number)
-    return PullRequestStatusResponse.model_validate(status)
-
-
 @router.post("/check-runs", response_model=CheckRunResponse, status_code=202)
 async def report_check_run(
     request: ReportCheckRunRequest,
@@ -58,3 +49,12 @@ async def report_check_run(
         details_url=request.details_url,
     )
     return CheckRunResponse.model_validate(result)
+
+
+@router.get("/{number}", response_model=PullRequestStatusResponse)
+async def get_pull_request_status(
+    number: int,
+    pull_requests: PullRequestService = Depends(get_pull_request_service),
+) -> PullRequestStatusResponse:
+    status = await pull_requests.get_pull_request_status(number)
+    return PullRequestStatusResponse.model_validate(status)

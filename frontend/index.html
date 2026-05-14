@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI Orchestrator Console</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Primary">
+        <div class="brand">
+          <div class="brand-mark">AO</div>
+          <div>
+            <strong>AI Orchestrator</strong>
+            <span>Operator console</span>
+          </div>
+        </div>
+        <nav class="nav-list">
+          <a class="nav-item active" href="#workflows" data-view="workflows">
+            <span class="icon" aria-hidden="true">⌁</span>
+            Workflows
+          </a>
+          <a class="nav-item" href="#tasks" data-view="tasks">
+            <span class="icon" aria-hidden="true">▦</span>
+            Task Graph
+          </a>
+          <a class="nav-item" href="#agents" data-view="agents">
+            <span class="icon" aria-hidden="true">◈</span>
+            Agents
+          </a>
+          <a class="nav-item" href="#approvals" data-view="approvals">
+            <span class="icon" aria-hidden="true">✓</span>
+            Approvals
+          </a>
+          <a class="nav-item" href="#github" data-view="github">
+            <span class="icon" aria-hidden="true">⌬</span>
+            GitHub
+          </a>
+        </nav>
+        <div class="sidebar-card">
+          <span class="label">Runtime</span>
+          <strong id="runtimeMode">Demo seed</strong>
+          <p>Connect FastAPI to switch from sample data to live orchestration.</p>
+        </div>
+      </aside>
+
+      <main class="workspace">
+        <header class="topbar">
+          <div>
+            <h1>Engineering Agent Console</h1>
+            <p>Plan, code, test, review, approve, and ship multi-agent workflows.</p>
+          </div>
+          <form class="connection-panel" id="connectionForm">
+            <label>
+              API base
+              <input id="apiBase" name="apiBase" value="http://127.0.0.1:8000" />
+            </label>
+            <label>
+              Bearer token
+              <input id="apiToken" name="apiToken" type="password" placeholder="optional" />
+            </label>
+            <button type="submit" class="btn primary">Connect</button>
+          </form>
+        </header>
+
+        <section class="status-grid" aria-label="Status summary">
+          <article class="metric">
+            <span>Active workflows</span>
+            <strong id="metricWorkflows">0</strong>
+          </article>
+          <article class="metric">
+            <span>Queued tasks</span>
+            <strong id="metricQueued">0</strong>
+          </article>
+          <article class="metric">
+            <span>Reviewer blocks</span>
+            <strong id="metricBlocked">0</strong>
+          </article>
+          <article class="metric">
+            <span>Approvals</span>
+            <strong id="metricApprovals">0</strong>
+          </article>
+        </section>
+
+        <section class="content-grid">
+          <section class="panel workflows-panel" id="workflows">
+            <div class="panel-header">
+              <div>
+                <h2>Workflows</h2>
+                <p>Create a user task and monitor its decomposition.</p>
+              </div>
+              <button class="btn" id="refreshButton">Refresh</button>
+            </div>
+            <form class="create-workflow" id="workflowForm">
+              <textarea id="userTask" rows="3" placeholder="Describe the software engineering task..."></textarea>
+              <button class="btn primary" type="submit">Create workflow</button>
+            </form>
+            <div class="workflow-list" id="workflowList"></div>
+          </section>
+
+          <section class="panel detail-panel" id="tasks">
+            <div class="panel-header">
+              <div>
+                <h2>Selected Workflow</h2>
+                <p id="selectedWorkflowHint">Select a workflow to inspect tasks and execution state.</p>
+              </div>
+              <span class="status-pill" id="selectedStatus">idle</span>
+            </div>
+            <div class="task-board" id="taskBoard"></div>
+          </section>
+
+          <section class="panel timeline-panel" id="agents">
+            <div class="panel-header">
+              <div>
+                <h2>Agent Activity</h2>
+                <p>Planner, coder, tester, reviewer, and sandbox events.</p>
+              </div>
+            </div>
+            <div class="timeline" id="eventTimeline"></div>
+          </section>
+
+          <section class="panel approvals-panel" id="approvals">
+            <div class="panel-header">
+              <div>
+                <h2>Approvals</h2>
+                <p>Human gates for sensitive actions.</p>
+              </div>
+            </div>
+            <div class="approval-list" id="approvalList"></div>
+          </section>
+
+          <section class="panel github-panel" id="github">
+            <div class="panel-header">
+              <div>
+                <h2>GitHub</h2>
+                <p>Read PR state and publish check-run results.</p>
+              </div>
+            </div>
+            <form class="github-actions" id="prStatusForm">
+              <label>
+                PR number
+                <input id="prNumber" inputmode="numeric" placeholder="7" />
+              </label>
+              <button class="btn" type="submit">Read status</button>
+            </form>
+            <pre class="code-output" id="prStatusOutput">No pull request loaded.</pre>
+            <form class="github-actions" id="checkRunForm">
+              <label>
+                Head SHA
+                <input id="headSha" placeholder="abc123" />
+              </label>
+              <label>
+                Summary
+                <input id="checkSummary" value="Workflow passed reviewer and tests." />
+              </label>
+              <button class="btn primary" type="submit">Report check</button>
+            </form>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script src="./app.js"></script>
+  </body>
+</html>

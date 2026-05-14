@@ -51,6 +51,17 @@ pytest tests -q
 uvicorn ai_orchestrator.api.app:app --reload
 ```
 
+## Operator UI
+
+The static console lives in `frontend/`:
+
+```bash
+python -m http.server 4173 -d frontend
+```
+
+Open `http://127.0.0.1:4173` and point it at the FastAPI base URL.
+The API allows this local console origin through `AIO_API_CORS_ORIGINS`.
+
 ## Architecture
 
 See [docs/architecture.md](docs/architecture.md).
