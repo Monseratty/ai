@@ -9,6 +9,7 @@ from ai_orchestrator.infrastructure.openai.agents_sdk_client import OpenAIAgents
 from ai_orchestrator.infrastructure.testing.fakes import FakeAgentClient
 from ai_orchestrator.infrastructure.git.composite import CompositeGitService
 from ai_orchestrator.infrastructure.telemetry.logging import StructuredLoggingTelemetry
+from ai_orchestrator.application.tools.permissions import ToolPermissionPolicy
 
 
 def test_composition_root_builds_production_adapters_from_settings(tmp_path: Path) -> None:
@@ -29,6 +30,7 @@ def test_composition_root_builds_production_adapters_from_settings(tmp_path: Pat
     assert root.sandbox is not None
     assert root.sandbox_validation is not None
     assert root.tool_executor is not None
+    assert isinstance(root.tool_permission_policy, ToolPermissionPolicy)
 
 
 def test_composition_root_uses_fake_agents_by_default_for_local_execution(tmp_path: Path) -> None:

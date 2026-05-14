@@ -8,6 +8,7 @@ from ai_orchestrator.application.approvals.service import ApprovalService
 from ai_orchestrator.application.git.pull_requests import PullRequestService
 from ai_orchestrator.application.sandbox.validation import SandboxValidationService
 from ai_orchestrator.application.tools.execution import ToolExecutionService
+from ai_orchestrator.application.tools.permissions import ToolPermissionPolicy
 from ai_orchestrator.application.agents.config import AgentModelConfig
 from ai_orchestrator.application.git.branching import BranchNamingPolicy
 from ai_orchestrator.config.settings import Settings
@@ -33,7 +34,7 @@ from ai_orchestrator.infrastructure.testing.fakes import (
     InMemoryTaskRepository,
     InMemoryWorkflowRepository,
 )
-from ai_orchestrator.domain.enums import ReviewDecision
+from ai_orchestrator.domain.enums import AgentType, ReviewDecision, TaskKind
 
 
 class TestingUnitOfWork:
@@ -68,9 +69,11 @@ class CompositionRoot:
             ),
         )
         self.sandbox_validation = SandboxValidationService(runner=self.sandbox)
+        self.tool_permission_policy = self._create_tool_permission_policy(settings)
         self.tool_executor = ToolExecutionService(
             runner=self.sandbox,
             allowed_tools=settings.sandbox_allowed_commands,
+            permission_policy=self.tool_permission_policy,
         )
 
     @property
@@ -162,3 +165,12 @@ class CompositionRoot:
         if settings.telemetry_backend == "opentelemetry":
             return OpenTelemetryAdapter()
         raise ValueError(f"Unsupported telemetry backend: {settings.telemetry_backend}")
+
+    def _create_tool_permission_policy(self, settings: Settings) -> ToolPermissionPolicy:
+        return ToolPermissionPolicy(
+            grants={
+                (AgentType.CODER, TaskKind.CODING): set(settings.sandbox_allowed_commands),
+                (AgentType.CODER, TaskKind.FEEDBACK_FIX): set(settings.sandbox_allowed_commands),
+                (AgentType.TESTER, TaskKind.TESTING): set(settings.sandbox_allowed_commands),
+            }
+        )

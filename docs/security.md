@@ -4,6 +4,8 @@
 
 Tool execution is policy mediated. A sandbox command is valid only when the executable is allowed by the active `SandboxPolicy`.
 
+`ToolExecutionService` also supports agent/task-scoped grants. Production composition grants tools by `(AgentType, TaskKind)`, so a tool can be allowed globally in the sandbox command allowlist while still being denied to a specific agent role or task kind before sandbox execution starts.
+
 ## Sandbox Isolation
 
 Default sandbox posture:

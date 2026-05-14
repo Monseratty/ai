@@ -170,6 +170,7 @@ FastAPI application factory и endpoints:
 ### Security
 
 - Tool permission system.
+- Agent/task-scoped tool permission grants.
 - Execution policies.
 - Approval gates.
 - Sandbox isolation.
@@ -294,7 +295,6 @@ AIO_TELEMETRY_BACKEND=opentelemetry
 ### Agent tooling
 
 - Расширить tool registry за пределы command execution.
-- Добавить typed tool permissions по agent role и task kind.
 - Добавить approval gates для privileged tools.
 - Расширить reviewer finding schemas и аналитику.
 
@@ -311,6 +311,6 @@ Backend сейчас готовится как API-first платформа. UI 
 
 ## Оценка готовности
 
-Текущая оценка: примерно 93%.
+Текущая оценка: примерно 94%.
 
-Оставшиеся 7% - это в основном live integration, production hardening, advanced agent tooling и UI.
+Оставшиеся 6% - это в основном live integration, production hardening, advanced agent tooling и UI.

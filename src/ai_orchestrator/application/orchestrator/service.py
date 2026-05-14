@@ -7,7 +7,7 @@ from time import perf_counter
 from ai_orchestrator.application.agents.schemas import AgentInput, CoderOutput, TesterOutput
 from ai_orchestrator.application.git.branching import BranchNamingPolicy
 from ai_orchestrator.application.tools.execution import ToolExecutionService, ToolRequest
-from ai_orchestrator.domain.enums import ReviewDecision, TaskKind, TaskStatus, WorkflowStatus
+from ai_orchestrator.domain.enums import AgentType, ReviewDecision, TaskKind, TaskStatus, WorkflowStatus
 from ai_orchestrator.domain.models.artifact import Artifact
 from ai_orchestrator.domain.models.execution import ExecutionEvent
 from ai_orchestrator.domain.models.review import TaskExecutionResult
@@ -133,7 +133,12 @@ class OrchestratorService:
             await self._store_agent_artifacts(workflow.id, task.id, coder_output)
             workspace = await self._prepare_workspace_for_task(workflow.id, task.id)
             if not await self._execute_tool_requests(
-                workflow.id, task.id, workspace, coder_output.tool_requests
+                workflow.id,
+                task.id,
+                workspace,
+                coder_output.tool_requests,
+                agent_type=AgentType.CODER,
+                task_kind=task.kind,
             ):
                 failed = task.with_status(TaskStatus.FAILED).with_output(
                     {"coder": coder_output.model_dump(mode="json")}
@@ -159,7 +164,12 @@ class OrchestratorService:
             )
             await self._store_test_artifacts(workflow.id, task.id, tester_output)
             if not await self._execute_tool_requests(
-                workflow.id, task.id, workspace, tester_output.tool_requests
+                workflow.id,
+                task.id,
+                workspace,
+                tester_output.tool_requests,
+                agent_type=AgentType.TESTER,
+                task_kind=TaskKind.TESTING,
             ):
                 failed = task.with_status(TaskStatus.FAILED).with_output(
                     {
@@ -254,7 +264,12 @@ class OrchestratorService:
         )
         await self._store_test_artifacts(workflow.id, task.id, tester_output)
         tools_passed = await self._execute_tool_requests(
-            workflow.id, task.id, workspace, tester_output.tool_requests
+            workflow.id,
+            task.id,
+            workspace,
+            tester_output.tool_requests,
+            agent_type=AgentType.TESTER,
+            task_kind=task.kind,
         )
         if not tools_passed:
             tester_output = tester_output.model_copy(update={"passed": False})
@@ -389,6 +404,8 @@ class OrchestratorService:
         task_id: UUID,
         workspace: SandboxWorkspace | None,
         tool_requests: list[dict],
+        agent_type: AgentType,
+        task_kind: TaskKind,
     ) -> bool:
         if not tool_requests:
             return True
@@ -399,6 +416,8 @@ class OrchestratorService:
             result = await self._tool_executor.execute(
                 workspace=workspace,
                 request=ToolRequest.model_validate(request_payload),
+                agent_type=agent_type,
+                task_kind=task_kind,
             )
             await self._artifacts.add(
                 Artifact(

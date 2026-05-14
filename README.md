@@ -16,6 +16,7 @@ Codex is treated as a coding worker behind the orchestration layer. The orchestr
 - Docker sandbox execution boundary with resource policy checks.
 - Sandbox workspace preparation and validation command service.
 - Policy-checked tool execution layer for agent-requested sandbox commands.
+- Agent/task-scoped tool permission policy.
 - Idempotent worker task claiming with retry attempt tracking.
 - GitPython integration boundary for branch, diff, commit, rollback, and PR creation.
 - Commit-on-success workflow hook with rollback on commit failure.

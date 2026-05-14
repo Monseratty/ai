@@ -5,6 +5,8 @@ from typing import Protocol
 from pydantic import BaseModel, Field
 
 from ai_orchestrator.application.orchestrator.policies import ToolPermissionError
+from ai_orchestrator.application.tools.permissions import ToolPermissionPolicy
+from ai_orchestrator.domain.enums import AgentType, TaskKind
 from ai_orchestrator.infrastructure.sandbox.workspace import SandboxWorkspace
 from ai_orchestrator.interfaces.sandbox import SandboxResult
 
@@ -34,18 +36,33 @@ class SandboxRunner(Protocol):
 
 
 class ToolExecutionService:
-    def __init__(self, *, runner: SandboxRunner, allowed_tools: set[str]) -> None:
+    def __init__(
+        self,
+        *,
+        runner: SandboxRunner,
+        allowed_tools: set[str],
+        permission_policy: ToolPermissionPolicy | None = None,
+    ) -> None:
         self._runner = runner
         self._allowed_tools = allowed_tools
+        self._permission_policy = permission_policy
 
     async def execute(
         self,
         *,
         workspace: SandboxWorkspace,
         request: ToolRequest,
+        agent_type: AgentType | None = None,
+        task_kind: TaskKind | None = None,
     ) -> ToolExecutionResult:
         if request.tool_name not in self._allowed_tools:
             raise ToolPermissionError(f"Tool {request.tool_name!r} is not allowed.")
+        if self._permission_policy is not None:
+            self._permission_policy.validate(
+                tool_name=request.tool_name,
+                agent_type=agent_type,
+                task_kind=task_kind,
+            )
         result = await self._runner.run(workspace=workspace, command=request.as_command())
         return ToolExecutionResult(
             tool_name=request.tool_name,

@@ -5,6 +5,8 @@ from pathlib import Path
 
 from ai_orchestrator.application.orchestrator.service import OrchestratorService
 from ai_orchestrator.application.tools.execution import ToolExecutionService
+from ai_orchestrator.application.tools.permissions import ToolPermissionPolicy
+from ai_orchestrator.domain.enums import AgentType, TaskKind
 from ai_orchestrator.infrastructure.sandbox.workspace import SandboxWorkspace, SandboxWorkspaceManager
 from ai_orchestrator.infrastructure.testing.fakes import (
     FakeAgentClient,
@@ -49,7 +51,16 @@ async def _assert_orchestrator_executes_agent_tool_requests_in_sandbox_workspace
         telemetry=InMemoryTelemetry(),
         workspace_manager=SandboxWorkspaceManager(workspace_root=tmp_path / "sandboxes"),
         repo_path=repo,
-        tool_executor=ToolExecutionService(runner=runner, allowed_tools={"pytest"}),
+        tool_executor=ToolExecutionService(
+            runner=runner,
+            allowed_tools={"pytest"},
+            permission_policy=ToolPermissionPolicy(
+                grants={
+                    (AgentType.CODER, TaskKind.CODING): {"pytest"},
+                    (AgentType.TESTER, TaskKind.TESTING): {"pytest"},
+                }
+            ),
+        ),
     )
 
     workflow = await service.create_workflow("Run tool requests")
