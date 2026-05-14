@@ -143,7 +143,7 @@ function renderSelectedWorkflow() {
   const tasks = snapshot?.tasks || seed.tasks;
   for (const task of tasks) {
     const node = document.createElement("article");
-    node.className = "task-item";
+    node.className = `task-item ${task.status}`;
     node.innerHTML = `
       <div class="row">
         <span class="task-kind">${task.kind}</span>

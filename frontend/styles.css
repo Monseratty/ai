@@ -1,16 +1,18 @@
 :root {
-  --bg: #f6f8f7;
+  --bg: #eef3f1;
   --panel: #ffffff;
   --ink: #17211f;
   --muted: #66736f;
   --line: #dce4e1;
+  --line-strong: #c2d0cc;
   --teal: #0f766e;
   --teal-strong: #0a5f58;
+  --mint: #dff7f1;
   --amber: #b7791f;
   --red: #b42318;
   --green: #15803d;
   --blue: #1d4ed8;
-  --shadow: 0 18px 48px rgba(23, 33, 31, 0.08);
+  --shadow: 0 18px 42px rgba(23, 33, 31, 0.07);
 }
 
 * {
@@ -39,9 +41,9 @@ textarea {
 }
 
 .sidebar {
-  background: #10211f;
+  background: #0d201e;
   color: #edf7f4;
-  padding: 22px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -59,7 +61,7 @@ textarea {
   display: grid;
   place-items: center;
   border-radius: 8px;
-  background: #21a59b;
+  background: linear-gradient(135deg, #40d3c4, #b6efe1);
   color: #08201d;
   font-weight: 800;
 }
@@ -120,7 +122,7 @@ textarea {
 
 .workspace {
   min-width: 0;
-  padding: 24px;
+  padding: 22px;
 }
 
 .topbar {
@@ -128,7 +130,19 @@ textarea {
   grid-template-columns: minmax(260px, 1fr) minmax(420px, 620px);
   gap: 18px;
   align-items: start;
-  margin-bottom: 18px;
+  margin-bottom: 14px;
+}
+
+.title-block {
+  min-height: 92px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: linear-gradient(135deg, #ffffff, #edf8f5);
+  padding: 18px;
+  box-shadow: var(--shadow);
 }
 
 h1,
@@ -138,7 +152,7 @@ p {
 }
 
 h1 {
-  font-size: 28px;
+  font-size: 30px;
   line-height: 1.15;
 }
 
@@ -162,11 +176,55 @@ p {
 
 .connection-panel {
   grid-template-columns: 1fr 1fr auto;
-  background: var(--panel);
+  background: #ffffff;
   border: 1px solid var(--line);
   border-radius: 8px;
   padding: 12px;
   box-shadow: var(--shadow);
+}
+
+.ops-strip {
+  display: grid;
+  grid-template-columns: 1.4fr repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.ops-strip article {
+  min-width: 0;
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 13px;
+  box-shadow: var(--shadow);
+}
+
+.ops-strip strong {
+  display: block;
+  margin-top: 6px;
+  font-size: 15px;
+}
+
+.ops-strip p {
+  margin-top: 3px;
+  font-size: 12px;
+}
+
+.pipeline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 9px;
+}
+
+.pipeline span {
+  border: 1px solid #b7ddd7;
+  background: var(--mint);
+  color: var(--teal-strong);
+  border-radius: 999px;
+  padding: 6px 9px;
+  font-size: 12px;
+  font-weight: 800;
 }
 
 label {
@@ -235,7 +293,17 @@ textarea:focus {
 }
 
 .metric {
+  position: relative;
+  overflow: hidden;
   padding: 14px;
+}
+
+.metric::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--teal), #f0b35b);
 }
 
 .metric span {
@@ -253,7 +321,7 @@ textarea:focus {
 
 .content-grid {
   display: grid;
-  grid-template-columns: minmax(340px, 0.95fr) minmax(420px, 1.35fr);
+  grid-template-columns: minmax(360px, 0.88fr) minmax(500px, 1.45fr);
   grid-template-areas:
     "workflows tasks"
     "agents approvals"
@@ -308,7 +376,7 @@ textarea:focus {
 .approval-item {
   border: 1px solid var(--line);
   border-radius: 8px;
-  padding: 12px;
+  padding: 11px;
   background: #fbfdfc;
 }
 
@@ -318,7 +386,8 @@ textarea:focus {
 
 .workflow-item.selected {
   border-color: var(--teal);
-  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.1);
+  background: #f1fbf8;
+  box-shadow: inset 3px 0 0 var(--teal);
 }
 
 .row {
@@ -346,6 +415,40 @@ textarea:focus {
   font-weight: 800;
 }
 
+.graph-legend {
+  display: flex;
+  gap: 12px;
+  margin: -2px 0 12px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.graph-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  display: inline-block;
+  border-radius: 999px;
+}
+
+.dot.done {
+  background: var(--green);
+}
+
+.dot.active {
+  background: var(--blue);
+}
+
+.dot.blocked {
+  background: var(--amber);
+}
+
 .status-pill.failed,
 .status-pill.rejected,
 .status-pill.requires_fixes {
@@ -367,8 +470,40 @@ textarea:focus {
 }
 
 .task-item {
+  position: relative;
   display: grid;
   gap: 8px;
+  padding-left: 16px;
+}
+
+.task-item::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 12px;
+  bottom: 12px;
+  width: 4px;
+  border-radius: 0 999px 999px 0;
+  background: var(--line-strong);
+}
+
+.task-item.succeeded::before {
+  background: var(--green);
+}
+
+.task-item.running::before,
+.task-item.queued::before,
+.task-item.in_progress::before {
+  background: var(--blue);
+}
+
+.task-item.blocked::before,
+.task-item.requires_fixes::before {
+  background: var(--amber);
+}
+
+.task-item.failed::before {
+  background: var(--red);
 }
 
 .task-kind {
@@ -380,6 +515,12 @@ textarea:focus {
 
 .timeline-item {
   border-left: 4px solid var(--teal);
+  background: #111c1a;
+  color: #e5f7f2;
+}
+
+.timeline-item .meta {
+  color: #a9c7c0;
 }
 
 .code-output {
@@ -434,6 +575,7 @@ textarea:focus {
   }
 
   .topbar,
+  .ops-strip,
   .content-grid,
   .connection-panel,
   .github-actions,

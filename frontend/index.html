@@ -47,7 +47,7 @@
 
       <main class="workspace">
         <header class="topbar">
-          <div>
+          <div class="title-block">
             <h1>Engineering Agent Console</h1>
             <p>Plan, code, test, review, approve, and ship multi-agent workflows.</p>
           </div>
@@ -63,6 +63,34 @@
             <button type="submit" class="btn primary">Connect</button>
           </form>
         </header>
+
+        <section class="ops-strip" aria-label="Agent operating model">
+          <article>
+            <span class="label">Agent pipeline</span>
+            <div class="pipeline">
+              <span>Planner</span>
+              <span>Coder</span>
+              <span>Tester</span>
+              <span>Reviewer</span>
+              <span>PR</span>
+            </div>
+          </article>
+          <article>
+            <span class="label">Sandbox</span>
+            <strong>Docker isolated</strong>
+            <p>Network denied by default</p>
+          </article>
+          <article>
+            <span class="label">Reviewer gate</span>
+            <strong>Mandatory</strong>
+            <p>Architecture, typing, security, imports, coverage</p>
+          </article>
+          <article>
+            <span class="label">GitHub</span>
+            <strong>PR + Checks</strong>
+            <p>Branch push, status sync, check-run reporting</p>
+          </article>
+        </section>
 
         <section class="status-grid" aria-label="Status summary">
           <article class="metric">
@@ -106,6 +134,11 @@
                 <p id="selectedWorkflowHint">Select a workflow to inspect tasks and execution state.</p>
               </div>
               <span class="status-pill" id="selectedStatus">idle</span>
+            </div>
+            <div class="graph-legend">
+              <span><i class="dot done"></i>done</span>
+              <span><i class="dot active"></i>active</span>
+              <span><i class="dot blocked"></i>blocked</span>
             </div>
             <div class="task-board" id="taskBoard"></div>
           </section>
