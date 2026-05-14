@@ -48,3 +48,19 @@ async def _assert_pull_request_service_requires_approved_gate_before_opening_pr(
     assert result.url == "local://pull-request/codex/work"
     assert git.pushes == [("codex/work", "origin")]
     assert git.pull_requests == [("Complete workflow", "Summary", "codex/work", "main")]
+
+
+def test_pull_request_service_reads_status_through_git_boundary() -> None:
+    asyncio.run(_assert_pull_request_service_reads_status_through_git_boundary())
+
+
+async def _assert_pull_request_service_reads_status_through_git_boundary() -> None:
+    service = PullRequestService(
+        git=FakeGitService(),
+        approvals=ApprovalService(InMemoryApprovalRepository()),
+    )
+
+    status = await service.get_pull_request_status(7)
+
+    assert status.number == 7
+    assert status.url == "local://pull-request/7"

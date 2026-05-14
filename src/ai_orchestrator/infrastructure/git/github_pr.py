@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Awaitable, Callable
 
-from ai_orchestrator.interfaces.git import PullRequestResult
+from ai_orchestrator.interfaces.git import PullRequestResult, PullRequestState, PullRequestStatus
 
 HttpSender = Callable[[str, str, dict, dict], Awaitable[dict]]
 
@@ -54,6 +54,26 @@ class GitHubPullRequestProvider:
             is_draft=response.get("draft", True),
         )
 
+    async def get_pull_request_status(self, number: int) -> PullRequestStatus:
+        response = await self._send(
+            "GET",
+            f"https://api.github.com/repos/{self._repository_full_name}/pulls/{number}",
+            self._headers(),
+            {},
+        )
+        is_merged = bool(response.get("merged", False))
+        state = PullRequestState.MERGED if is_merged else PullRequestState(response["state"])
+        return PullRequestStatus(
+            number=response["number"],
+            url=response["html_url"],
+            state=state,
+            is_draft=response.get("draft", False),
+            is_merged=is_merged,
+            head_ref=response["head"]["ref"],
+            head_sha=response["head"].get("sha"),
+            base_ref=response["base"]["ref"],
+        )
+
     def _headers(self) -> dict:
         return {
             "Accept": "application/vnd.github+json",
@@ -70,7 +90,10 @@ class GitHubPullRequestProvider:
             raise RuntimeError("Install httpx to use GitHubPullRequestProvider.") from exc
 
         async with httpx.AsyncClient(timeout=30.0) as client:
-            response = await client.request(method, url, headers=headers, json=json)
+            kwargs = {"headers": headers}
+            if json:
+                kwargs["json"] = json
+            response = await client.request(method, url, **kwargs)
         if response.status_code >= 400:
             raise GitHubPullRequestError(
                 f"GitHub PR creation failed with status {response.status_code}: {response.text}"

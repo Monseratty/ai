@@ -6,9 +6,10 @@ pytest.importorskip("fastapi")
 
 from fastapi.testclient import TestClient  # noqa: E402
 
-from ai_orchestrator.api.deps import get_orchestrator  # noqa: E402
+from ai_orchestrator.api.deps import get_orchestrator, get_pull_request_service  # noqa: E402
 from ai_orchestrator.api.app import create_app
 from ai_orchestrator.application.orchestrator.service import OrchestratorService  # noqa: E402
+from ai_orchestrator.interfaces.git import PullRequestState, PullRequestStatus  # noqa: E402
 from ai_orchestrator.infrastructure.testing.fakes import (  # noqa: E402
     FakeAgentClient,
     InMemoryArtifactRepository,
@@ -88,3 +89,37 @@ def test_api_supports_manual_task_execute_retry_and_workflow_cancel() -> None:
     assert cancelled.json()["status"] == "cancelled"
     assert retry.status_code == 200
     assert retry.json()["status"] == "queued"
+
+
+def test_api_reads_pull_request_status() -> None:
+    app = create_app()
+
+    class FakePullRequestService:
+        async def get_pull_request_status(self, number: int) -> PullRequestStatus:
+            return PullRequestStatus(
+                number=number,
+                url=f"https://github.com/acme/repo/pull/{number}",
+                state=PullRequestState.OPEN,
+                is_draft=False,
+                is_merged=False,
+                head_ref="codex/work",
+                head_sha="abc123",
+                base_ref="main",
+            )
+
+    app.dependency_overrides[get_pull_request_service] = lambda: FakePullRequestService()
+    client = TestClient(app)
+
+    response = client.get("/pull-requests/7")
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "number": 7,
+        "url": "https://github.com/acme/repo/pull/7",
+        "state": "open",
+        "is_draft": False,
+        "is_merged": False,
+        "head_ref": "codex/work",
+        "head_sha": "abc123",
+        "base_ref": "main",
+    }

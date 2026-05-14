@@ -65,6 +65,12 @@ AIO_GITHUB_TOKEN=...
 
 Workflow branches are generated from the configured prefix, a sanitized user-task slug, and the workflow id prefix. Pull request creation remains approval-gated by `PullRequestService`, and the branch is pushed before the GitHub PR provider is called.
 
+Pull request status can be read through the API:
+
+```bash
+curl http://127.0.0.1:8000/pull-requests/7
+```
+
 ## Migration Path
 
 The initial queue implementation uses Celery. Temporal can be introduced by implementing the `TaskQueue` protocol and moving orchestration state transitions into Temporal activities while keeping domain and agent contracts unchanged.

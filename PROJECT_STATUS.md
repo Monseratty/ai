@@ -129,6 +129,7 @@ Memory layer включает:
 - Composite git service: local git operations + configurable PR provider.
 - Branch naming policy: `codex/<sanitized-task>-<workflow-id-prefix>`.
 - Push orchestration before pull request creation.
+- PR status synchronization через Git abstraction и API endpoint.
 
 ### API
 
@@ -289,7 +290,6 @@ AIO_TELEMETRY_BACKEND=opentelemetry
 
 ### GitHub / PR operations
 
-- Добавить PR status synchronization.
 - Добавить GitHub check-run/status reporting.
 
 ### Agent tooling
@@ -312,6 +312,6 @@ Backend сейчас готовится как API-first платформа. UI 
 
 ## Оценка готовности
 
-Текущая оценка: примерно 91%.
+Текущая оценка: примерно 92%.
 
-Оставшиеся 9% - это в основном live integration, production hardening, PR status/check reporting и UI.
+Оставшиеся 8% - это в основном live integration, production hardening, GitHub check reporting и UI.

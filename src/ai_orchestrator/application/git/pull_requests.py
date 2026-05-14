@@ -3,7 +3,7 @@ from __future__ import annotations
 from uuid import UUID
 
 from ai_orchestrator.application.approvals.service import ApprovalService
-from ai_orchestrator.interfaces.git import GitService, PullRequestResult
+from ai_orchestrator.interfaces.git import GitService, PullRequestResult, PullRequestStatus
 
 
 class PullRequestService:
@@ -29,3 +29,6 @@ class PullRequestService:
             branch_name=branch_name,
             base_ref=base_ref,
         )
+
+    async def get_pull_request_status(self, number: int) -> PullRequestStatus:
+        return await self._git.get_pull_request_status(number)

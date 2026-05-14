@@ -2,7 +2,12 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from ai_orchestrator.interfaces.git import CommitResult, GitService, PullRequestResult
+from ai_orchestrator.interfaces.git import (
+    CommitResult,
+    GitService,
+    PullRequestResult,
+    PullRequestStatus,
+)
 
 
 class PullRequestProvider(Protocol):
@@ -14,6 +19,8 @@ class PullRequestProvider(Protocol):
         branch_name: str,
         base_ref: str = "main",
     ) -> PullRequestResult: ...
+
+    async def get_pull_request_status(self, number: int) -> PullRequestStatus: ...
 
 
 class CompositeGitService(GitService):
@@ -45,3 +52,6 @@ class CompositeGitService(GitService):
             branch_name=branch_name,
             base_ref=base_ref,
         )
+
+    async def get_pull_request_status(self, number: int) -> PullRequestStatus:
+        return await self._pull_requests.get_pull_request_status(number)

@@ -3,10 +3,15 @@ from __future__ import annotations
 import asyncio
 
 from ai_orchestrator.infrastructure.git.github_pr import GitHubPullRequestProvider
+from ai_orchestrator.interfaces.git import PullRequestState
 
 
 def test_github_pull_request_provider_posts_expected_payload() -> None:
     asyncio.run(_assert_github_pull_request_provider_posts_expected_payload())
+
+
+def test_github_pull_request_provider_reads_pr_status() -> None:
+    asyncio.run(_assert_github_pull_request_provider_reads_pr_status())
 
 
 async def _assert_github_pull_request_provider_posts_expected_payload() -> None:
@@ -47,5 +52,50 @@ async def _assert_github_pull_request_provider_posts_expected_payload() -> None:
                 "base": "main",
                 "draft": True,
             },
+        )
+    ]
+
+
+async def _assert_github_pull_request_provider_reads_pr_status() -> None:
+    calls = []
+
+    async def sender(method: str, url: str, headers: dict, json: dict):
+        calls.append((method, url, headers, json))
+        return {
+            "html_url": "https://github.com/acme/repo/pull/7",
+            "number": 7,
+            "state": "open",
+            "draft": False,
+            "merged": False,
+            "head": {"ref": "codex/work", "sha": "abc123"},
+            "base": {"ref": "main"},
+        }
+
+    provider = GitHubPullRequestProvider(
+        repository_full_name="acme/repo",
+        token="token",
+        sender=sender,
+    )
+
+    status = await provider.get_pull_request_status(7)
+
+    assert status.number == 7
+    assert status.url == "https://github.com/acme/repo/pull/7"
+    assert status.state is PullRequestState.OPEN
+    assert status.is_draft is False
+    assert status.is_merged is False
+    assert status.head_ref == "codex/work"
+    assert status.head_sha == "abc123"
+    assert status.base_ref == "main"
+    assert calls == [
+        (
+            "GET",
+            "https://api.github.com/repos/acme/repo/pulls/7",
+            {
+                "Accept": "application/vnd.github+json",
+                "Authorization": "Bearer token",
+                "X-GitHub-Api-Version": "2022-11-28",
+            },
+            {},
         )
     ]

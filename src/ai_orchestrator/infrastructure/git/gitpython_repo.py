@@ -2,7 +2,13 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from ai_orchestrator.interfaces.git import CommitResult, GitService, PullRequestResult
+from ai_orchestrator.interfaces.git import (
+    CommitResult,
+    GitService,
+    PullRequestResult,
+    PullRequestState,
+    PullRequestStatus,
+)
 
 
 class GitPythonService(GitService):
@@ -49,4 +55,15 @@ class GitPythonService(GitService):
             url=f"local://pull-request/{branch_name}?base={base_ref}",
             number=None,
             is_draft=True,
+        )
+
+    async def get_pull_request_status(self, number: int) -> PullRequestStatus:
+        return PullRequestStatus(
+            number=number,
+            url=f"local://pull-request/{number}",
+            state=PullRequestState.OPEN,
+            is_draft=True,
+            is_merged=False,
+            head_ref="local",
+            base_ref="main",
         )

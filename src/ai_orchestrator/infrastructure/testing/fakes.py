@@ -19,7 +19,12 @@ from ai_orchestrator.domain.models.execution import ExecutionEvent
 from ai_orchestrator.domain.models.artifact import Artifact
 from ai_orchestrator.domain.models.task import Task
 from ai_orchestrator.domain.models.workflow import Workflow
-from ai_orchestrator.interfaces.git import CommitResult, PullRequestResult
+from ai_orchestrator.interfaces.git import (
+    CommitResult,
+    PullRequestResult,
+    PullRequestState,
+    PullRequestStatus,
+)
 from ai_orchestrator.domain.enums import TaskStatus
 
 
@@ -177,6 +182,17 @@ class FakeGitService:
     ) -> PullRequestResult:
         self.pull_requests.append((title, body, branch_name, base_ref))
         return PullRequestResult(url=f"local://pull-request/{branch_name}", is_draft=True)
+
+    async def get_pull_request_status(self, number: int) -> PullRequestStatus:
+        return PullRequestStatus(
+            number=number,
+            url=f"local://pull-request/{number}",
+            state=PullRequestState.OPEN,
+            is_draft=True,
+            is_merged=False,
+            head_ref="codex/work",
+            base_ref="main",
+        )
 
 
 class FakeAgentClient:
