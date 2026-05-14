@@ -1,5 +1,5 @@
 const state = {
-  apiBase: localStorage.getItem("aio.apiBase") || "http://127.0.0.1:8000",
+  apiBase: normalizeApiBase(localStorage.getItem("aio.apiBase") || "http://127.0.0.1:8000"),
   apiToken: localStorage.getItem("aio.apiToken") || "",
   workflows: [],
   selectedWorkflowId: null,
@@ -67,6 +67,14 @@ const seed = {
 
 const qs = (selector) => document.querySelector(selector);
 
+function normalizeApiBase(value) {
+  const trimmed = String(value || "").trim().replace(/\/$/, "");
+  if (!trimmed) return "http://127.0.0.1:8000";
+  return trimmed
+    .replace("http://127.0.1:", "http://127.0.0.1:")
+    .replace("https://127.0.1:", "https://127.0.0.1:");
+}
+
 function headers() {
   const value = { "content-type": "application/json" };
   if (state.apiToken.trim()) {
@@ -84,7 +92,7 @@ async function request(path, options = {}) {
     });
   } catch (error) {
     throw new Error(
-      `Cannot reach API at ${state.apiBase}. Check that backend is running, the UI is opened from http://127.0.0.1:4173, and AIO_API_CORS_ORIGINS includes this origin.`,
+      `Cannot reach API at ${state.apiBase}. Check API base is exactly http://127.0.0.1:8000, backend is running, and the UI is opened from http://127.0.0.1:4173.`,
     );
   }
   if (!response.ok) {
@@ -366,10 +374,12 @@ function escapeHtml(value) {
 }
 
 qs("#apiBase").value = state.apiBase;
+localStorage.setItem("aio.apiBase", state.apiBase);
 qs("#apiToken").value = state.apiToken;
 qs("#connectionForm").addEventListener("submit", (event) => {
   event.preventDefault();
-  state.apiBase = qs("#apiBase").value.trim().replace(/\/$/, "");
+  state.apiBase = normalizeApiBase(qs("#apiBase").value);
+  qs("#apiBase").value = state.apiBase;
   state.apiToken = qs("#apiToken").value;
   localStorage.setItem("aio.apiBase", state.apiBase);
   localStorage.setItem("aio.apiToken", state.apiToken);
