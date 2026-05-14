@@ -76,10 +76,17 @@ function headers() {
 }
 
 async function request(path, options = {}) {
-  const response = await fetch(`${state.apiBase}${path}`, {
-    ...options,
-    headers: { ...headers(), ...(options.headers || {}) },
-  });
+  let response;
+  try {
+    response = await fetch(`${state.apiBase}${path}`, {
+      ...options,
+      headers: { ...headers(), ...(options.headers || {}) },
+    });
+  } catch (error) {
+    throw new Error(
+      `Cannot reach API at ${state.apiBase}. Check that backend is running, the UI is opened from http://127.0.0.1:4173, and AIO_API_CORS_ORIGINS includes this origin.`,
+    );
+  }
   if (!response.ok) {
     const text = await response.text();
     throw new Error(`${response.status} ${response.statusText}: ${text}`);

@@ -10,6 +10,7 @@ from ai_orchestrator.infrastructure.testing.fakes import FakeAgentClient
 from ai_orchestrator.infrastructure.git.composite import CompositeGitService
 from ai_orchestrator.infrastructure.telemetry.logging import StructuredLoggingTelemetry
 from ai_orchestrator.application.tools.permissions import ToolPermissionPolicy
+from ai_orchestrator.infrastructure.composition import TestingUnitOfWork
 
 
 def test_composition_root_builds_production_adapters_from_settings(tmp_path: Path) -> None:
@@ -17,6 +18,7 @@ def test_composition_root_builds_production_adapters_from_settings(tmp_path: Pat
         database_url="postgresql+asyncpg://user:pass@localhost:5432/test",
         artifact_root=tmp_path,
         openai_model="gpt-5.2",
+        git_enabled=True,
     )
 
     root = CompositionRoot(settings=settings)
@@ -49,6 +51,7 @@ def test_composition_root_can_use_github_pull_request_provider(tmp_path: Path) -
     root = CompositionRoot(
         settings=Settings(
             artifact_root=tmp_path,
+            git_enabled=True,
             pull_request_provider="github",
             github_repository="acme/repo",
             github_token="token",
@@ -56,6 +59,12 @@ def test_composition_root_can_use_github_pull_request_provider(tmp_path: Path) -
     )
 
     assert isinstance(root.git, CompositeGitService)
+
+
+def test_composition_root_disables_git_by_default_for_local_ui_mode(tmp_path: Path) -> None:
+    root = CompositionRoot(settings=Settings(artifact_root=tmp_path))
+
+    assert root.git is None
 
 
 def test_composition_root_creates_orchestrator_for_unit_of_work(tmp_path: Path) -> None:
@@ -67,3 +76,17 @@ def test_composition_root_creates_orchestrator_for_unit_of_work(tmp_path: Path) 
 
     assert orchestrator is not None
     assert unit.workflows is not None
+
+
+def test_composition_root_can_use_shared_memory_state_backend(tmp_path: Path) -> None:
+    root = CompositionRoot(settings=Settings(artifact_root=tmp_path, state_backend="memory"))
+
+    async def read_units() -> None:
+        async with root.unit() as first:
+            async with root.unit() as second:
+                assert isinstance(first, TestingUnitOfWork)
+                assert first is second
+
+    import asyncio
+
+    asyncio.run(read_units())

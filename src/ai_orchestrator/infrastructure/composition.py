@@ -50,6 +50,7 @@ class CompositionRoot:
     def __init__(self, *, settings: Settings) -> None:
         self.settings = settings
         self._session_factory = None
+        self._memory_unit = TestingUnitOfWork() if settings.state_backend == "memory" else None
         self.queue = CeleryTaskQueue()
         self.artifact_store = FilesystemArtifactStore(settings.artifact_root)
         self.agent_client = self._create_agent_client(settings)
@@ -83,7 +84,12 @@ class CompositionRoot:
         return self._session_factory
 
     @asynccontextmanager
-    async def unit(self) -> AsyncIterator[SqlAlchemyUnitOfWork]:
+    async def unit(self) -> AsyncIterator[SqlAlchemyUnitOfWork | TestingUnitOfWork]:
+        if self._memory_unit is not None:
+            yield self._memory_unit
+            return
+        if self.settings.state_backend != "postgres":
+            raise ValueError(f"Unsupported state backend: {self.settings.state_backend}")
         async with unit_of_work(self.session_factory) as uow:
             yield uow
 
@@ -119,6 +125,8 @@ class CompositionRoot:
     def pull_request_service_for_unit_of_work(
         self, uow: SqlAlchemyUnitOfWork | TestingUnitOfWork
     ) -> PullRequestService:
+        if self.git is None:
+            raise RuntimeError("Git integration is disabled. Set AIO_GIT_ENABLED=true.")
         return PullRequestService(
             git=self.git,
             approvals=self.approval_service_for_unit_of_work(uow),
@@ -142,6 +150,8 @@ class CompositionRoot:
         raise ValueError(f"Unsupported agent backend: {settings.agent_backend}")
 
     def _create_git_service(self, settings: Settings):
+        if not settings.git_enabled:
+            return None
         local = GitPythonService(settings.repo_path)
         if settings.pull_request_provider == "local":
             return local

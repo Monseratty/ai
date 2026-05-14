@@ -51,6 +51,8 @@ pytest tests -q
 uvicorn ai_orchestrator.api.app:app --reload
 ```
 
+Local state defaults to `AIO_STATE_BACKEND=memory`, so the API works without Postgres for UI testing. Git operations are disabled by default with `AIO_GIT_ENABLED=false`, so creating a workflow from the UI will not switch branches. Set `AIO_STATE_BACKEND=postgres`, start Postgres, run migrations, and set `AIO_GIT_ENABLED=true` when you want persistent state and real branch/commit/PR operations.
+
 ## Operator UI
 
 The static console lives in `frontend/`:

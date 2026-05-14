@@ -11,6 +11,7 @@ class Settings(BaseSettings):
 
     app_name: str = "AI Software Engineering Orchestrator"
     environment: str = "local"
+    state_backend: str = "memory"
     database_url: str = "postgresql+asyncpg://orchestrator:orchestrator@localhost:5432/orchestrator"
     redis_url: str = "redis://localhost:6379/0"
     sandbox_image: str = "python:3.12-slim"
@@ -27,6 +28,7 @@ class Settings(BaseSettings):
     agent_backend: str = "fake"
     artifact_root: Path = Path(".artifacts")
     repo_path: Path = Path(".")
+    git_enabled: bool = False
     branch_prefix: str = "codex/"
     pull_request_provider: str = "local"
     github_repository: str | None = None
