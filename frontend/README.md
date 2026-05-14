@@ -22,7 +22,7 @@ Backend API should run separately:
 uvicorn ai_orchestrator.api.app:app --reload
 ```
 
-By default the backend uses `AIO_STATE_BACKEND=memory`, so the console works without Postgres. Git operations are also disabled by default with `AIO_GIT_ENABLED=false`, so UI workflow creation will not switch local branches. For persistent state and real git operations, set `AIO_STATE_BACKEND=postgres`, set `AIO_GIT_ENABLED=true`, start Postgres/Redis, and run Alembic migrations.
+By default the backend uses `AIO_STATE_BACKEND=memory` and `AIO_QUEUE_BACKEND=memory`, so the console works without Postgres, Redis, or Celery. Git operations are also disabled by default with `AIO_GIT_ENABLED=false`, so UI workflow creation will not switch local branches. For persistent state and real git operations, set `AIO_STATE_BACKEND=postgres`, `AIO_QUEUE_BACKEND=celery`, set `AIO_GIT_ENABLED=true`, start Postgres/Redis, and run Alembic migrations.
 
 The default backend CORS setting allows `http://127.0.0.1:4173` and `http://localhost:4173`.
 

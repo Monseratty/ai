@@ -5,6 +5,7 @@ from pathlib import Path
 from ai_orchestrator.config.settings import Settings
 from ai_orchestrator.infrastructure.composition import CompositionRoot
 from ai_orchestrator.infrastructure.queue.celery_queue import CeleryTaskQueue
+from ai_orchestrator.infrastructure.queue.memory import InMemoryTaskQueue
 from ai_orchestrator.infrastructure.openai.agents_sdk_client import OpenAIAgentsSDKClient
 from ai_orchestrator.infrastructure.testing.fakes import FakeAgentClient
 from ai_orchestrator.infrastructure.git.composite import CompositeGitService
@@ -19,6 +20,7 @@ def test_composition_root_builds_production_adapters_from_settings(tmp_path: Pat
         artifact_root=tmp_path,
         openai_model="gpt-5.2",
         git_enabled=True,
+        queue_backend="celery",
     )
 
     root = CompositionRoot(settings=settings)
@@ -90,3 +92,9 @@ def test_composition_root_can_use_shared_memory_state_backend(tmp_path: Path) ->
     import asyncio
 
     asyncio.run(read_units())
+
+
+def test_composition_root_uses_in_memory_queue_by_default_for_local_ui_mode(tmp_path: Path) -> None:
+    root = CompositionRoot(settings=Settings(artifact_root=tmp_path))
+
+    assert isinstance(root.queue, InMemoryTaskQueue)

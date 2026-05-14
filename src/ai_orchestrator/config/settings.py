@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     state_backend: str = "memory"
     database_url: str = "postgresql+asyncpg://orchestrator:orchestrator@localhost:5432/orchestrator"
     redis_url: str = "redis://localhost:6379/0"
+    queue_backend: str = "memory"
     sandbox_image: str = "python:3.12-slim"
     sandbox_timeout_seconds: int = 300
     sandbox_memory: str = "1g"

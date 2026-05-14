@@ -17,6 +17,7 @@ from ai_orchestrator.infrastructure.db.session import create_session_factory
 from ai_orchestrator.infrastructure.db.unit_of_work import SqlAlchemyUnitOfWork, unit_of_work
 from ai_orchestrator.infrastructure.openai.agents_sdk_client import OpenAIAgentsSDKClient
 from ai_orchestrator.infrastructure.queue.celery_queue import CeleryTaskQueue
+from ai_orchestrator.infrastructure.queue.memory import InMemoryTaskQueue
 from ai_orchestrator.infrastructure.telemetry.logging import StructuredLoggingTelemetry
 from ai_orchestrator.infrastructure.telemetry.opentelemetry import OpenTelemetryAdapter
 from ai_orchestrator.infrastructure.git.composite import CompositeGitService
@@ -51,7 +52,7 @@ class CompositionRoot:
         self.settings = settings
         self._session_factory = None
         self._memory_unit = TestingUnitOfWork() if settings.state_backend == "memory" else None
-        self.queue = CeleryTaskQueue()
+        self.queue = self._create_task_queue(settings)
         self.artifact_store = FilesystemArtifactStore(settings.artifact_root)
         self.agent_client = self._create_agent_client(settings)
         self.telemetry = self._create_telemetry(settings)
@@ -148,6 +149,13 @@ class CompositionRoot:
                 )
             )
         raise ValueError(f"Unsupported agent backend: {settings.agent_backend}")
+
+    def _create_task_queue(self, settings: Settings):
+        if settings.queue_backend == "memory":
+            return InMemoryTaskQueue()
+        if settings.queue_backend == "celery":
+            return CeleryTaskQueue()
+        raise ValueError(f"Unsupported queue backend: {settings.queue_backend}")
 
     def _create_git_service(self, settings: Settings):
         if not settings.git_enabled:
