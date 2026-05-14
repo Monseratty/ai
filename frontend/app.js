@@ -15,12 +15,12 @@ const seed = {
     {
       id: "seed-workflow-1",
       status: "in_progress",
-      user_task: "Add audit-safe pull request reporting with reviewer validation",
+      user_task: "[Demo] Add audit-safe pull request reporting with reviewer validation",
     },
     {
       id: "seed-workflow-2",
       status: "planned",
-      user_task: "Refactor sandbox execution policies for typed tool grants",
+      user_task: "[Demo] Refactor sandbox execution policies for typed tool grants",
     },
   ],
   tasks: [
@@ -28,24 +28,24 @@ const seed = {
       id: "task-1",
       kind: "coding",
       status: "succeeded",
-      title: "Implement requested change",
-      description: "Patch backend services and API contracts.",
+      title: "[Demo] Code audit-safe PR reporting",
+      description: "Demo-only task. Connect to the live API to see tasks generated from your request.",
       dependency_ids: [],
     },
     {
       id: "task-2",
       kind: "testing",
       status: "running",
-      title: "Validate requested change",
-      description: "Run contract and orchestration tests.",
+      title: "[Demo] Test PR reporting workflow",
+      description: "Demo-only task. Live workflows use your prompt in task titles and descriptions.",
       dependency_ids: ["task-1"],
     },
     {
       id: "task-3",
       kind: "review",
       status: "blocked",
-      title: "Reviewer gate",
-      description: "Check architecture, typing, security, imports, and coverage.",
+      title: "[Demo] Reviewer gate",
+      description: "Demo-only reviewer check for architecture, security, imports, and coverage.",
       dependency_ids: ["task-2"],
     },
   ],
@@ -158,6 +158,7 @@ function renderSelectedWorkflow() {
       </div>
       <strong>${escapeHtml(task.title)}</strong>
       <p>${escapeHtml(task.description)}</p>
+      <div class="meta">${state.live ? "generated from your workflow request" : "demo data, not your workflow"}</div>
       <div class="meta">deps: ${task.dependency_ids?.length ? task.dependency_ids.join(", ") : "none"}</div>
       <div class="row">
         <button class="btn" data-action="execute" data-task-id="${task.id}">Execute</button>

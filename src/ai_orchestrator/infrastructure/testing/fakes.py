@@ -236,18 +236,19 @@ class FakeAgentClient:
         return cls(reviewer_decision=ReviewDecision.APPROVE, include_tool_requests=True)
 
     async def plan(self, request: AgentInput) -> PlannerOutput:
+        short_objective = _shorten(request.objective)
         return PlannerOutput(
             summary=f"Plan for {request.objective}",
             tasks=[
                 PlannedTask(
                     kind=TaskKind.CODING,
-                    title="Implement requested change",
-                    description=request.objective,
+                    title=f"Code: {short_objective}",
+                    description=f"Work on the user request: {request.objective}",
                 ),
                 PlannedTask(
                     kind=TaskKind.TESTING,
-                    title="Validate requested change",
-                    description=f"Validate: {request.objective}",
+                    title=f"Test: {short_objective}",
+                    description=f"Validate the user request: {request.objective}",
                     depends_on=[0],
                 ),
             ],
@@ -294,3 +295,10 @@ class FakeAgentClient:
             ],
             required_fixes=["Address reviewer policy findings."],
         )
+
+
+def _shorten(value: str, limit: int = 72) -> str:
+    normalized = " ".join(value.split())
+    if len(normalized) <= limit:
+        return normalized
+    return f"{normalized[: limit - 1].rstrip()}…"
