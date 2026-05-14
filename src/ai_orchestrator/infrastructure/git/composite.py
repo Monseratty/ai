@@ -3,6 +3,9 @@ from __future__ import annotations
 from typing import Protocol
 
 from ai_orchestrator.interfaces.git import (
+    CheckRunConclusion,
+    CheckRunResult,
+    CheckRunStatus,
     CommitResult,
     GitService,
     PullRequestResult,
@@ -21,6 +24,17 @@ class PullRequestProvider(Protocol):
     ) -> PullRequestResult: ...
 
     async def get_pull_request_status(self, number: int) -> PullRequestStatus: ...
+
+    async def report_check_run(
+        self,
+        *,
+        name: str,
+        head_sha: str,
+        status: CheckRunStatus,
+        conclusion: CheckRunConclusion | None = None,
+        summary: str,
+        details_url: str | None = None,
+    ) -> CheckRunResult: ...
 
 
 class CompositeGitService(GitService):
@@ -55,3 +69,22 @@ class CompositeGitService(GitService):
 
     async def get_pull_request_status(self, number: int) -> PullRequestStatus:
         return await self._pull_requests.get_pull_request_status(number)
+
+    async def report_check_run(
+        self,
+        *,
+        name: str,
+        head_sha: str,
+        status: CheckRunStatus,
+        conclusion: CheckRunConclusion | None = None,
+        summary: str,
+        details_url: str | None = None,
+    ) -> CheckRunResult:
+        return await self._pull_requests.report_check_run(
+            name=name,
+            head_sha=head_sha,
+            status=status,
+            conclusion=conclusion,
+            summary=summary,
+            details_url=details_url,
+        )

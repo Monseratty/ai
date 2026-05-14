@@ -2,7 +2,14 @@ from __future__ import annotations
 
 from collections.abc import Awaitable, Callable
 
-from ai_orchestrator.interfaces.git import PullRequestResult, PullRequestState, PullRequestStatus
+from ai_orchestrator.interfaces.git import (
+    CheckRunConclusion,
+    CheckRunResult,
+    CheckRunStatus,
+    PullRequestResult,
+    PullRequestState,
+    PullRequestStatus,
+)
 
 HttpSender = Callable[[str, str, dict, dict], Awaitable[dict]]
 
@@ -72,6 +79,41 @@ class GitHubPullRequestProvider:
             head_ref=response["head"]["ref"],
             head_sha=response["head"].get("sha"),
             base_ref=response["base"]["ref"],
+        )
+
+    async def report_check_run(
+        self,
+        *,
+        name: str,
+        head_sha: str,
+        status: CheckRunStatus,
+        conclusion: CheckRunConclusion | None = None,
+        summary: str,
+        details_url: str | None = None,
+    ) -> CheckRunResult:
+        payload = {
+            "name": name,
+            "head_sha": head_sha,
+            "status": status.value,
+            "output": {
+                "title": name,
+                "summary": summary,
+            },
+        }
+        if conclusion is not None:
+            payload["conclusion"] = conclusion.value
+        if details_url is not None:
+            payload["details_url"] = details_url
+
+        response = await self._send(
+            "POST",
+            f"https://api.github.com/repos/{self._repository_full_name}/check-runs",
+            self._headers(),
+            payload,
+        )
+        return CheckRunResult(
+            provider_id=str(response["id"]),
+            url=response["html_url"],
         )
 
     def _headers(self) -> dict:

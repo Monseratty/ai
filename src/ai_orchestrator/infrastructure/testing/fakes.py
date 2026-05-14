@@ -20,6 +20,9 @@ from ai_orchestrator.domain.models.artifact import Artifact
 from ai_orchestrator.domain.models.task import Task
 from ai_orchestrator.domain.models.workflow import Workflow
 from ai_orchestrator.interfaces.git import (
+    CheckRunConclusion,
+    CheckRunResult,
+    CheckRunStatus,
     CommitResult,
     PullRequestResult,
     PullRequestState,
@@ -156,6 +159,9 @@ class FakeGitService:
         self.commits: list[tuple[str, list[str]]] = []
         self.pushes: list[tuple[str, str]] = []
         self.pull_requests: list[tuple[str, str, str, str]] = []
+        self.check_runs: list[
+            tuple[str, str, CheckRunStatus, CheckRunConclusion | None, str, str | None]
+        ] = []
         self.rollback_count = 0
         self.fail_commit = False
 
@@ -193,6 +199,19 @@ class FakeGitService:
             head_ref="codex/work",
             base_ref="main",
         )
+
+    async def report_check_run(
+        self,
+        *,
+        name: str,
+        head_sha: str,
+        status: CheckRunStatus,
+        conclusion: CheckRunConclusion | None = None,
+        summary: str,
+        details_url: str | None = None,
+    ) -> CheckRunResult:
+        self.check_runs.append((name, head_sha, status, conclusion, summary, details_url))
+        return CheckRunResult(provider_id=f"fake:{len(self.check_runs)}", url="local://check-runs/1")
 
 
 class FakeAgentClient:

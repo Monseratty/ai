@@ -24,6 +24,7 @@ Codex is treated as a coding worker behind the orchestration layer. The orchestr
 - Push orchestration before pull request creation.
 - GitHub pull request provider.
 - Pull request status synchronization boundary and API endpoint.
+- GitHub check-run reporting boundary and API endpoint.
 - Logging and OpenTelemetry telemetry backends.
 - FastAPI API surface.
 - Redis-backed distributed API rate limiting for multi-instance deployments.
@@ -56,7 +57,7 @@ See [docs/runbook.md](docs/runbook.md) for operational commands and failure hand
 
 ## Project Status
 
-This is a production-grade foundation. It includes the core boundaries, domain model, orchestration loop, reviewer gate, bounded feedback loop, deterministic fakes, Postgres repository adapters, SQL migration, OpenAI Agents SDK adapter with schema retry, per-agent model config, Docker sandbox command construction, sandbox workspace preparation, policy-checked tool execution, idempotent worker task claiming, approval gates, execution history, filesystem artifact storage, Celery queue adapter, API observability endpoints, git commit/rollback flow, branch naming, approval-gated PR service, GitHub PR provider, PR status synchronization, and tests.
+This is a production-grade foundation. It includes the core boundaries, domain model, orchestration loop, reviewer gate, bounded feedback loop, deterministic fakes, Postgres repository adapters, SQL migration, OpenAI Agents SDK adapter with schema retry, per-agent model config, Docker sandbox command construction, sandbox workspace preparation, policy-checked tool execution, idempotent worker task claiming, approval gates, execution history, filesystem artifact storage, Celery queue adapter, API observability endpoints, git commit/rollback flow, branch naming, approval-gated PR service, GitHub PR provider, PR status synchronization, GitHub check-run reporting, and tests.
 
 Remaining production wiring:
 

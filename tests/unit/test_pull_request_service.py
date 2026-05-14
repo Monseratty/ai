@@ -6,6 +6,7 @@ from ai_orchestrator.application.git.pull_requests import PullRequestService
 from ai_orchestrator.application.approvals.service import ApprovalService
 from ai_orchestrator.domain.models.workflow import Workflow
 from ai_orchestrator.infrastructure.testing.fakes import FakeGitService, InMemoryApprovalRepository
+from ai_orchestrator.interfaces.git import CheckRunConclusion, CheckRunStatus
 
 
 def test_pull_request_service_requires_approved_gate_before_opening_pr() -> None:
@@ -64,3 +65,36 @@ async def _assert_pull_request_service_reads_status_through_git_boundary() -> No
 
     assert status.number == 7
     assert status.url == "local://pull-request/7"
+
+
+def test_pull_request_service_reports_check_run_through_git_boundary() -> None:
+    asyncio.run(_assert_pull_request_service_reports_check_run_through_git_boundary())
+
+
+async def _assert_pull_request_service_reports_check_run_through_git_boundary() -> None:
+    git = FakeGitService()
+    service = PullRequestService(
+        git=git,
+        approvals=ApprovalService(InMemoryApprovalRepository()),
+    )
+
+    result = await service.report_check_run(
+        name="AI Orchestrator",
+        head_sha="abc123",
+        status=CheckRunStatus.COMPLETED,
+        conclusion=CheckRunConclusion.SUCCESS,
+        summary="Passed reviewer and tests.",
+        details_url="https://orchestrator.example/workflows/1",
+    )
+
+    assert result.provider_id == "fake:1"
+    assert git.check_runs == [
+        (
+            "AI Orchestrator",
+            "abc123",
+            CheckRunStatus.COMPLETED,
+            CheckRunConclusion.SUCCESS,
+            "Passed reviewer and tests.",
+            "https://orchestrator.example/workflows/1",
+        )
+    ]

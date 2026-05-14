@@ -9,7 +9,13 @@ from fastapi.testclient import TestClient  # noqa: E402
 from ai_orchestrator.api.deps import get_orchestrator, get_pull_request_service  # noqa: E402
 from ai_orchestrator.api.app import create_app
 from ai_orchestrator.application.orchestrator.service import OrchestratorService  # noqa: E402
-from ai_orchestrator.interfaces.git import PullRequestState, PullRequestStatus  # noqa: E402
+from ai_orchestrator.interfaces.git import (  # noqa: E402
+    CheckRunConclusion,
+    CheckRunResult,
+    CheckRunStatus,
+    PullRequestState,
+    PullRequestStatus,
+)
 from ai_orchestrator.infrastructure.testing.fakes import (  # noqa: E402
     FakeAgentClient,
     InMemoryArtifactRepository,
@@ -107,6 +113,18 @@ def test_api_reads_pull_request_status() -> None:
                 base_ref="main",
             )
 
+        async def report_check_run(
+            self,
+            *,
+            name: str,
+            head_sha: str,
+            status: CheckRunStatus,
+            conclusion: CheckRunConclusion | None = None,
+            summary: str,
+            details_url: str | None = None,
+        ) -> CheckRunResult:
+            return CheckRunResult(provider_id="99", url="https://github.com/acme/repo/runs/99")
+
     app.dependency_overrides[get_pull_request_service] = lambda: FakePullRequestService()
     client = TestClient(app)
 
@@ -122,4 +140,42 @@ def test_api_reads_pull_request_status() -> None:
         "head_ref": "codex/work",
         "head_sha": "abc123",
         "base_ref": "main",
+    }
+
+
+def test_api_reports_check_run() -> None:
+    app = create_app()
+
+    class FakePullRequestService:
+        async def report_check_run(
+            self,
+            *,
+            name: str,
+            head_sha: str,
+            status: CheckRunStatus,
+            conclusion: CheckRunConclusion | None = None,
+            summary: str,
+            details_url: str | None = None,
+        ) -> CheckRunResult:
+            return CheckRunResult(provider_id="99", url="https://github.com/acme/repo/runs/99")
+
+    app.dependency_overrides[get_pull_request_service] = lambda: FakePullRequestService()
+    client = TestClient(app)
+
+    response = client.post(
+        "/pull-requests/check-runs",
+        json={
+            "name": "AI Orchestrator",
+            "head_sha": "abc123",
+            "status": "completed",
+            "conclusion": "success",
+            "summary": "Passed reviewer and tests.",
+            "details_url": "https://orchestrator.example/workflows/1",
+        },
+    )
+
+    assert response.status_code == 202
+    assert response.json() == {
+        "provider_id": "99",
+        "url": "https://github.com/acme/repo/runs/99",
     }

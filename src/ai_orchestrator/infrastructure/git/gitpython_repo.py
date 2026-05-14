@@ -3,6 +3,9 @@ from __future__ import annotations
 from pathlib import Path
 
 from ai_orchestrator.interfaces.git import (
+    CheckRunConclusion,
+    CheckRunResult,
+    CheckRunStatus,
     CommitResult,
     GitService,
     PullRequestResult,
@@ -66,4 +69,19 @@ class GitPythonService(GitService):
             is_merged=False,
             head_ref="local",
             base_ref="main",
+        )
+
+    async def report_check_run(
+        self,
+        *,
+        name: str,
+        head_sha: str,
+        status: CheckRunStatus,
+        conclusion: CheckRunConclusion | None = None,
+        summary: str,
+        details_url: str | None = None,
+    ) -> CheckRunResult:
+        return CheckRunResult(
+            provider_id=f"local:{head_sha}:{name}",
+            url=details_url or f"local://check-runs/{head_sha}",
         )

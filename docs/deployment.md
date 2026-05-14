@@ -71,6 +71,14 @@ Pull request status can be read through the API:
 curl http://127.0.0.1:8000/pull-requests/7
 ```
 
+Workflow status can be reported back to GitHub Checks:
+
+```bash
+curl -X POST http://127.0.0.1:8000/pull-requests/check-runs \
+  -H "content-type: application/json" \
+  -d '{"name":"AI Orchestrator","head_sha":"abc123","status":"completed","conclusion":"success","summary":"Workflow passed reviewer and tests."}'
+```
+
 ## Migration Path
 
 The initial queue implementation uses Celery. Temporal can be introduced by implementing the `TaskQueue` protocol and moving orchestration state transitions into Temporal activities while keeping domain and agent contracts unchanged.

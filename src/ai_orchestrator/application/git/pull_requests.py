@@ -3,7 +3,14 @@ from __future__ import annotations
 from uuid import UUID
 
 from ai_orchestrator.application.approvals.service import ApprovalService
-from ai_orchestrator.interfaces.git import GitService, PullRequestResult, PullRequestStatus
+from ai_orchestrator.interfaces.git import (
+    CheckRunConclusion,
+    CheckRunResult,
+    CheckRunStatus,
+    GitService,
+    PullRequestResult,
+    PullRequestStatus,
+)
 
 
 class PullRequestService:
@@ -32,3 +39,22 @@ class PullRequestService:
 
     async def get_pull_request_status(self, number: int) -> PullRequestStatus:
         return await self._git.get_pull_request_status(number)
+
+    async def report_check_run(
+        self,
+        *,
+        name: str,
+        head_sha: str,
+        status: CheckRunStatus,
+        conclusion: CheckRunConclusion | None = None,
+        summary: str,
+        details_url: str | None = None,
+    ) -> CheckRunResult:
+        return await self._git.report_check_run(
+            name=name,
+            head_sha=head_sha,
+            status=status,
+            conclusion=conclusion,
+            summary=summary,
+            details_url=details_url,
+        )

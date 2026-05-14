@@ -130,6 +130,7 @@ Memory layer включает:
 - Branch naming policy: `codex/<sanitized-task>-<workflow-id-prefix>`.
 - Push orchestration before pull request creation.
 - PR status synchronization через Git abstraction и API endpoint.
+- GitHub check-run reporting через Git abstraction и API endpoint.
 
 ### API
 
@@ -138,6 +139,8 @@ FastAPI application factory и endpoints:
 - create workflow;
 - list workflows;
 - get workflow snapshot;
+- read PR status;
+- report GitHub check runs;
 - list artifacts;
 - list execution history;
 - manually execute task;
@@ -179,7 +182,7 @@ FastAPI application factory и endpoints:
 Текущая локальная проверка:
 
 ```text
-73 passed, 5 skipped
+81 passed, 5 skipped
 ```
 
 Покрыты:
@@ -288,10 +291,6 @@ AIO_TELEMETRY_BACKEND=opentelemetry
 - Настроить production OpenTelemetry exporter.
 - Добавить dashboard examples: latency, failure rate, retry count, reviewer rejection rate.
 
-### GitHub / PR operations
-
-- Добавить GitHub check-run/status reporting.
-
 ### Agent tooling
 
 - Расширить tool registry за пределы command execution.
@@ -312,6 +311,6 @@ Backend сейчас готовится как API-first платформа. UI 
 
 ## Оценка готовности
 
-Текущая оценка: примерно 92%.
+Текущая оценка: примерно 93%.
 
-Оставшиеся 8% - это в основном live integration, production hardening, GitHub check reporting и UI.
+Оставшиеся 7% - это в основном live integration, production hardening, advanced agent tooling и UI.
