@@ -148,7 +148,8 @@ FastAPI application factory и endpoints:
 Также добавлены:
 
 - optional bearer token auth;
-- in-memory rate limiting;
+- in-memory rate limiting для single-process local mode;
+- Redis-backed distributed rate limiting для multi-instance deployment;
 - API dependency wiring.
 
 ### Telemetry / Observability
@@ -258,6 +259,9 @@ AIO_GITHUB_REPOSITORY=owner/name
 AIO_GITHUB_TOKEN=...
 
 AIO_API_TOKEN=...
+AIO_API_RATE_LIMIT_BACKEND=memory
+AIO_API_RATE_LIMIT_BACKEND=redis
+AIO_API_RATE_LIMIT_PER_MINUTE=60
 AIO_TELEMETRY_BACKEND=logging
 AIO_TELEMETRY_BACKEND=opentelemetry
 ```
@@ -274,7 +278,6 @@ AIO_TELEMETRY_BACKEND=opentelemetry
 
 ### Production hardening
 
-- Заменить in-memory rate limiter на Redis-backed distributed rate limiter.
 - Добавить полноценную operator identity/auth модель.
 - Добавить secrets manager integration.
 - Настроить JSON log formatter.
@@ -308,6 +311,6 @@ Backend сейчас готовится как API-first платформа. UI 
 
 ## Оценка готовности
 
-Текущая оценка: примерно 88%.
+Текущая оценка: примерно 89%.
 
-Оставшиеся 12% - это в основном live integration, production hardening, расширение GitHub flow и UI.
+Оставшиеся 11% - это в основном live integration, production hardening, расширение GitHub flow и UI.

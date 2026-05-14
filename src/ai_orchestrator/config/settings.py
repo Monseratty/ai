@@ -31,6 +31,7 @@ class Settings(BaseSettings):
     github_repository: str | None = None
     github_token: str | None = None
     api_token: str | None = None
+    api_rate_limit_backend: str = "memory"
     api_rate_limit_per_minute: int = Field(default=60, ge=1)
     telemetry_backend: str = "logging"
 

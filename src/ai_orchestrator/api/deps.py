@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import AsyncIterator
+from collections.abc import Callable
 from functools import lru_cache
 
 try:
@@ -17,10 +18,16 @@ except ImportError:  # pragma: no cover - exercised in environments without Fast
 
 from ai_orchestrator.application.orchestrator.service import OrchestratorService
 from ai_orchestrator.application.approvals.service import ApprovalService
+from ai_orchestrator.config.settings import Settings
 from ai_orchestrator.config.settings import get_settings
 from ai_orchestrator.infrastructure.composition import CompositionRoot
 from ai_orchestrator.api.security import ApiAuthError, verify_bearer_token
-from ai_orchestrator.api.rate_limit import InMemoryRateLimiter, RateLimitExceeded
+from ai_orchestrator.api.rate_limit import (
+    InMemoryRateLimiter,
+    RateLimiter,
+    RateLimitExceeded,
+    RedisRateLimiter,
+)
 
 
 @lru_cache(maxsize=1)
@@ -29,8 +36,28 @@ def get_composition_root() -> CompositionRoot:
 
 
 @lru_cache(maxsize=1)
-def get_rate_limiter() -> InMemoryRateLimiter:
-    return InMemoryRateLimiter(limit=get_settings().api_rate_limit_per_minute)
+def get_rate_limiter() -> RateLimiter:
+    return build_rate_limiter(get_settings())
+
+
+def build_rate_limiter(
+    settings: Settings,
+    *,
+    redis_factory: Callable[[str], object] | None = None,
+) -> RateLimiter:
+    if settings.api_rate_limit_backend == "memory":
+        return InMemoryRateLimiter(limit=settings.api_rate_limit_per_minute)
+    if settings.api_rate_limit_backend == "redis":
+        if redis_factory is None:
+            from redis.asyncio import Redis
+
+            redis_factory = lambda url: Redis.from_url(url, decode_responses=True)
+
+        return RedisRateLimiter(
+            redis=redis_factory(settings.redis_url),
+            limit=settings.api_rate_limit_per_minute,
+        )
+    raise ValueError(f"Unsupported API rate limit backend: {settings.api_rate_limit_backend}")
 
 
 async def get_orchestrator() -> AsyncIterator[OrchestratorService]:
@@ -51,7 +78,7 @@ async def require_api_auth(authorization: str | None = Header(default=None)) -> 
             authorization=authorization,
         )
         key = authorization or "anonymous"
-        get_rate_limiter().check(key)
+        await get_rate_limiter().check(key)
     except ApiAuthError as exc:
         raise HTTPException(status_code=401, detail=str(exc)) from exc
     except RateLimitExceeded as exc:

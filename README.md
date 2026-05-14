@@ -23,6 +23,7 @@ Codex is treated as a coding worker behind the orchestration layer. The orchestr
 - GitHub pull request provider.
 - Logging and OpenTelemetry telemetry backends.
 - FastAPI API surface.
+- Redis-backed distributed API rate limiting for multi-instance deployments.
 - Workflow snapshot endpoint.
 - Workflow list, artifacts, execution history, and approval endpoints.
 - Structured telemetry boundary.
@@ -59,3 +60,4 @@ Remaining production wiring:
 - Run live integration tests in the target environment.
 
 For production agent execution, set `AIO_AGENT_BACKEND=openai`. The default `fake` backend keeps local development deterministic.
+For more than one API instance, set `AIO_API_RATE_LIMIT_BACKEND=redis` so rate limiting is shared through Redis instead of process memory.

@@ -27,11 +27,30 @@ The application setting uses SQLAlchemy's async `postgresql+asyncpg://...` form.
 - Set network defaults to deny for sandbox jobs.
 - Add centralized logs, traces, and metrics.
 - Configure rate limits at gateway and application levels.
+- Set `AIO_API_RATE_LIMIT_BACKEND=redis` for horizontally scaled API deployments.
 - Provide a production composition root that creates Postgres repositories, `CeleryTaskQueue`, artifact storage, `OpenAIAgentsSDKClient`, telemetry, sandbox, and git services.
 - Set `AIO_AGENT_BACKEND=openai` for production model execution.
 - Run `AIO_RUN_INTEGRATION_TESTS=1 pytest tests/integration -q` against the deployment substrate before enabling workers.
 - Use `AIO_TELEMETRY_BACKEND=opentelemetry` for production metrics/traces.
 - Set `AIO_API_RATE_LIMIT_PER_MINUTE` according to expected operator/API traffic.
+
+## API Rate Limiting
+
+Local development can use the default in-memory limiter:
+
+```bash
+AIO_API_RATE_LIMIT_BACKEND=memory
+```
+
+Production deployments with multiple API replicas should use Redis:
+
+```bash
+AIO_API_RATE_LIMIT_BACKEND=redis
+AIO_REDIS_URL=redis://redis:6379/0
+AIO_API_RATE_LIMIT_PER_MINUTE=120
+```
+
+The Redis limiter hashes client keys before storage so bearer tokens or raw identifiers are not written into Redis keys.
 
 ## GitHub Pull Requests
 
