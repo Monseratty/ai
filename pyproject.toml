@@ -1,0 +1,45 @@
+[project]
+name = "ai-se-orchestrator"
+version = "0.1.0"
+description = "Production-grade AI agent orchestration framework for software engineering workflows."
+requires-python = ">=3.12"
+dependencies = [
+  "alembic>=1.13,<2",
+  "asyncpg>=0.30,<1",
+  "celery>=5.4,<6",
+  "fastapi>=0.115,<1",
+  "gitpython>=3.1,<4",
+  "httpx>=0.27,<1",
+  "openai-agents>=0.3,<1",
+  "opentelemetry-api>=1.27,<2",
+  "pydantic>=2.9,<3",
+  "pydantic-settings>=2.5,<3",
+  "redis>=5,<6",
+  "sqlalchemy[asyncio]>=2.0,<3",
+  "uvicorn>=0.30,<1",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.3,<9",
+  "pytest-asyncio>=0.24,<1",
+  "ruff>=0.7,<1",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/ai_orchestrator"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]

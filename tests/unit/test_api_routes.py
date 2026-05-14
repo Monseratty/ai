@@ -1,0 +1,90 @@
+from __future__ import annotations
+
+import pytest
+
+pytest.importorskip("fastapi")
+
+from fastapi.testclient import TestClient  # noqa: E402
+
+from ai_orchestrator.api.deps import get_orchestrator  # noqa: E402
+from ai_orchestrator.api.app import create_app
+from ai_orchestrator.application.orchestrator.service import OrchestratorService  # noqa: E402
+from ai_orchestrator.infrastructure.testing.fakes import (  # noqa: E402
+    FakeAgentClient,
+    InMemoryArtifactRepository,
+    InMemoryExecutionEventRepository,
+    InMemoryTaskQueue,
+    InMemoryTaskRepository,
+    InMemoryTelemetry,
+    InMemoryWorkflowRepository,
+)
+
+
+def create_test_client() -> TestClient:
+    app = create_app()
+    service = OrchestratorService(
+        workflows=InMemoryWorkflowRepository(),
+        tasks=InMemoryTaskRepository(),
+        artifacts=InMemoryArtifactRepository(),
+        queue=InMemoryTaskQueue(),
+        agents=FakeAgentClient.approving_code_review(),
+        telemetry=InMemoryTelemetry(),
+        execution_events=InMemoryExecutionEventRepository(),
+    )
+    app.dependency_overrides[get_orchestrator] = lambda: service
+    return TestClient(app)
+
+
+def test_api_creates_and_reads_workflow_snapshot() -> None:
+    client = create_test_client()
+
+    created = client.post("/workflows", json={"user_task": "Build read endpoint"})
+
+    assert created.status_code == 202
+    workflow_id = created.json()["id"]
+
+    fetched = client.get(f"/workflows/{workflow_id}")
+
+    assert fetched.status_code == 200
+    body = fetched.json()
+    assert body["workflow"]["id"] == workflow_id
+    assert len(body["tasks"]) == 2
+
+
+def test_api_exposes_workflow_observability_resources() -> None:
+    client = create_test_client()
+    created = client.post("/workflows", json={"user_task": "Expose observability"})
+    workflow_id = created.json()["id"]
+
+    workflows = client.get("/workflows")
+    artifacts = client.get(f"/workflows/{workflow_id}/artifacts")
+    history = client.get(f"/workflows/{workflow_id}/history")
+
+    assert workflows.status_code == 200
+    assert workflows.json()[0]["id"] == workflow_id
+    assert artifacts.status_code == 200
+    assert history.status_code == 200
+    assert [event["event_type"] for event in history.json()] == [
+        "workflow.created",
+        "workflow.planned",
+    ]
+
+
+def test_api_supports_manual_task_execute_retry_and_workflow_cancel() -> None:
+    client = create_test_client()
+    created = client.post("/workflows", json={"user_task": "Control workflow"})
+    workflow_id = created.json()["id"]
+    snapshot = client.get(f"/workflows/{workflow_id}").json()
+    task_id = snapshot["tasks"][0]["id"]
+    dependent_task_id = snapshot["tasks"][1]["id"]
+
+    executed = client.post(f"/workflows/tasks/{task_id}/execute")
+    cancelled = client.post(f"/workflows/{workflow_id}/cancel")
+    retry = client.post(f"/workflows/tasks/{dependent_task_id}/retry")
+
+    assert executed.status_code == 200
+    assert executed.json()["task_id"] == task_id
+    assert cancelled.status_code == 200
+    assert cancelled.json()["status"] == "cancelled"
+    assert retry.status_code == 200
+    assert retry.json()["status"] == "queued"
